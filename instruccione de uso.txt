@@ -29,7 +29,42 @@ ejecuten este comando para hacer el ejecutable
 g++ -o catalogo main.cpp -I/c/fltk/include -L/c/fltk/lib -lfltk -lfltk_images -lws2_32 -lole32 -luuid -lcomctl32
 /////////////////
 
-para ejecutar el ejecutable xd
-////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+camino facil (solo deben crear la carpeta llamada catalogo_app )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Actualizar MSYS2 y instalar compilador y FLTK
+pacman -Syu
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-fltk mingw-w64-x86_64-libjpeg-turbo mingw-w64-x86_64-libpng
+
+# Crear directorio del proyecto y organizar archivos
+mkdir -p ~/catalogo_app/portadas
+mkdir -p ~/catalogo_app/videos/peliculas
+mkdir -p ~/catalogo_app/videos/series
+cd ~/catalogo_app
+
+#el ~ es lo que le falta 
+#ejemplo el mio se ve asi
+#C:\Users\DiegoB)\Desktop\catalogo_app
+
+#recuerden que esa carpeta de catalogo_app deben poner en main.cpp de este mismo repositorio
+
+# para compilar y crear el ejecutable
+g++ -o catalogo main.cpp -I/mingw64/include -L/mingw64/lib -lfltk -lfltk_images -lws2_32 -lole32 -luuid -lcomctl32
+
+# Ejecutar el ejecutable lol
 ./catalogo.exe
-/////
+
+
