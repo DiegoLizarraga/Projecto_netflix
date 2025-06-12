@@ -1,0 +1,35 @@
+como corre el programa
+debido a los problemas con widgets cambie a biblioteca FLTK
+
+///////////////////////
+cosas que ya deben tener 
+-visual studio o dev c++
+-instaldo el MinGW-w64 para compilar
+
+decargar el flk
+https://www.fltk.org/software.php
+ %traten de instalarlo en su compu no en el one drive
+
+ corran este comando en la termina del visual
+//////////////
+ ./configure --prefix=/c/fltk
+make
+make install
+/////////////
+
+
+deben crear una carpeta donde esten todos los archivos del repositorio
+
+deben abrir el MSYS2 esto pero con la direccion de su carpeta
+
+cd /c/catalogo_app
+
+ejecuten este comando para hacer el ejecutable
+//////////////////////
+g++ -o catalogo main.cpp -I/c/fltk/include -L/c/fltk/lib -lfltk -lfltk_images -lws2_32 -lole32 -luuid -lcomctl32
+/////////////////
+
+para ejecutar el ejecutable xd
+////////
+./catalogo.exe
+/////
