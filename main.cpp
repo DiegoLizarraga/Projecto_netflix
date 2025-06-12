@@ -47,11 +47,12 @@ protected:
     std::string titulo;
     double calificacion;
     std::string genero;
+// std:: string genero[10];
     std::string director;
     int anio;
     std::string rutaPortada;
     std::string basePath;
-
+// COMO INICIALIZAR LA VARIABLE GENERO CUANDO ES UN ARREGLO DE STRING??? INICIALIZAR CON VALORE DE " "
 public:
     Video(const std::string& t, double cal, const std::string& g, 
           const std::string& dir, int a)
@@ -69,6 +70,12 @@ public:
     
     std::string getTitulo() const { return titulo; }
     std::string getGenero() const { return genero; }
+    // std::string getGenero() const {                            // Recorre la variable genero para obtener un solo string de salida
+    // string salida=""; 
+    //for (i=0; (genero[i]<>' '||i<10);i++){
+    // salida=salida+" "+genero[1]; }
+    // return salida;
+    // }
     std::string getRutaPortada() const { return rutaPortada; }
     double getCalificacion() const { return calificacion; }
     std::string getDirector() const { return director; }
@@ -85,7 +92,13 @@ public:
     void setGenero(const std::string& g) {
         genero = g;
     }
-    
+// void setGenero(const std::string& g) {
+// for (i=0;(genero[i]<>' '||i<10);i++){                    // Recorremos Genero hasta la primera casilla vacia o llegar hasta la ultima casilla
+//    };
+// if (i=10) {salida/return="No se puede agregar un genero mas"};
+//    else{
+//    genero[i]=g;
+// }
     bool existePortada() const {
         std::ifstream file(rutaPortada);
         return file.good();
@@ -114,6 +127,7 @@ public:
     std::string getInfo() const override {
         std::ostringstream oss;
         oss << "Película: " << titulo << " | Género: " << genero 
+    //  oss << "Película: " << titulo << " | Género: " << getGenero()                // utlizamos el metodo getGenero para obtener la lista de generos
             << " | Duración: " << duracion << " min | Director: " << director
             << " | Año: " << anio << " | Calificación: " << std::fixed << std::setprecision(1) << calificacion;
         return oss.str();
@@ -144,7 +158,7 @@ public:
     
     std::string getInfo() const override {
         std::ostringstream oss;
-        oss << "Serie: " << titulo << " | Género: " << genero 
+        oss << "Serie: " << titulo << " | Género: " << genero         // hacer lo mismo que en Pelicual getGenero
             << " | Temporadas: " << numTemporadas << " | Episodios: " << totalEpisodios
             << " | Director: " << director << " | Calificación: " << std::fixed << std::setprecision(1) << calificacion;
         return oss.str();
@@ -361,7 +375,7 @@ private:
                 else if (tipo == "USUARIO_CALIFICACION" && partes.size() >= 4) {
                     procesarCalificacionUsuario(partes[1], partes[2], std::stoi(partes[3]));
                 }
-                else if (tipo == "GENERO" && partes.size() >= 3) {
+                else if (tipo == "GENERO" && partes.size() >= 3) {            // QUE tipo de variable es partes? y por que consta de dos arreglos? que info guarda?
                     actualizarGeneroVideo(partes[1], partes[2]);
                 }
             }
@@ -418,10 +432,10 @@ private:
     
     void agregarNuevaPelicula(const std::vector<std::string>& partes) {
         std::string titulo = partes[1];
-        double calificacion = std::stod(partes[2]);
-        int duracion = std::stoi(partes[3]);
-        std::string genero = partes[4];
-        std::string director = partes[5];
+        double calificacion = std::stod(partes[2]);                    //Se asume que partes es una variable que contiene TODOS los datos de la pelicula
+        int duracion = std::stoi(partes[3]);                           // y SOLO se permite el ingreso de un tipo Genero, no mas
+        std::string genero = partes[4];                                // La linea tiene que cambiar a genero[0] = partes[4];
+        std::string director = partes[5];                
         int anio = std::stoi(partes[6]);
         
         for (auto& video : catalogo) {
@@ -429,14 +443,14 @@ private:
         }
         
         catalogo.push_back(std::make_shared<Pelicula>(
-            titulo, calificacion, duracion, genero, director, anio));
+            titulo, calificacion, duracion, genero, director, anio));     //No se que hace esta funcion... pero se necesita cambiar GENERO... a lo mejor como un apuntador
     }
     
     void agregarNuevaSerie(const std::vector<std::string>& partes) {
         std::string titulo = partes[1];
         double calificacion = std::stod(partes[2]);
         int episodiosPorTemp = std::stoi(partes[3]);
-        std::string genero = partes[4];
+        std::string genero = partes[4];                                // Lo mismo que agregarNuevaPelicula genero[0]
         int numTemporadas = std::stoi(partes[5]);
         int totalEpisodios = std::stoi(partes[6]);
         std::string director = partes[7];
@@ -446,7 +460,7 @@ private:
         }
         
         catalogo.push_back(std::make_shared<Serie>(
-            titulo, calificacion, episodiosPorTemp, genero, 
+            titulo, calificacion, episodiosPorTemp, genero,             //Lo mismo que el otro pushback
             numTemporadas, totalEpisodios, director));
     }
     
@@ -460,7 +474,7 @@ private:
             }
         }
     }
-    
+    // Se tiene que cambiar el nombre de actualizarGeneroVideo a AgregarGeneroVideo
     void actualizarGeneroVideo(const std::string& titulo, const std::string& nuevoGenero) {
         for (auto& video : catalogo) {
             if (video->getTitulo() == titulo) {
@@ -468,6 +482,16 @@ private:
             }
         }
     }
+    // Hay que definir una funcion que Actualice un genero por otro
+    //void actualizarGeneroVideo(const std::string& titulo,string viejoGenero const std::string& nuevoGenero) {
+    //    for (auto& video : catalogo) {
+    //        if (video->getTitulo() == titulo) {
+    //            for (i=0;genero[i]<>viejoGenero||i<10;i++){
+    //            };
+    //            video->genero[i]=nuevoGenero;
+    //        }
+    //    }
+    //}
     
     std::string generarEstadisticas() {
         int totalPeliculas = 0;
