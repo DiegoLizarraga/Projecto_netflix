@@ -49,16 +49,16 @@ class Video {
 protected:
     std::string titulo;
     double calificacion;
-    std::string genero;
+    std::vetor<std::string> generos;
     std::string director;
     int anio;
     std::string rutaPortada;
     std::string basePath;
 
 public:
-    Video(const std::string& t, double cal, const std::string& g, 
+    Video(const std::string& t, double cal, const std::vector<std::string>& gs, 
           const std::string& dir, int a)
-        : titulo(t), calificacion(cal), genero(g), director(dir), 
+        : titulo(t), calificacion(cal), generos(gs), director(dir), 
           anio(a), basePath(".\\") {
         std::string nombreArchivo = tituloANombreArchivo(titulo);
         rutaPortada = basePath + "portadas\\" + nombreArchivo + ".jpg";
@@ -71,7 +71,7 @@ public:
     virtual std::string getRutaVideo() const = 0;
     
     std::string getTitulo() const { return titulo; }
-    std::string getGenero() const { return genero; }
+    const std::vector<std::string>& getGeneros() const { return generos; }
     std::string getRutaPortada() const { return rutaPortada; }
     double getCalificacion() const { return calificacion; }
     std::string getDirector() const { return director; }
@@ -85,8 +85,8 @@ public:
         calificacion = cal;
     }
     
-    void setGenero(const std::string& g) {
-        genero = g;
+    void setGeneros(const std::vector<std::string>& gs) {
+    generos = gs;
     }
     
     bool existePortada() const {
@@ -108,16 +108,20 @@ private:
     int duracion;
     
 public:
-    Pelicula(const std::string& t, double cal, int d, const std::string& g, 
+    Pelicula(const std::string& t, double cal, int d, const std::vector<std::string>& gs, 
              const std::string& dir, int a)
-        : Video(t, cal, g, dir, a), duracion(d) {}
+        : Video(t, cal, gs, dir, a), duracion(d) {}
     
     std::string getTipo() const override { return "Pelicula"; }
     
     std::string getInfo() const override {
         std::ostringstream oss;
-        oss << "Película: " << titulo << " | Género: " << genero 
-            << " | Duración: " << duracion << " min | Director: " << director
+        oss << "Película: " << titulo << " | Género: ";
+        for (size_t i = 0; i < generos.size(); ++i) {
+            oss << generos[i];
+            if (i != generos.size() -1) oss << ", ";
+        }
+        oss << " | Duración: " << duracion << " min | Director: " << director
             << " | Año: " << anio << " | Calificación: " << std::fixed << std::setprecision(1) << calificacion;
         return oss.str();
     }
@@ -138,17 +142,21 @@ private:
     int totalEpisodios;
     
 public:
-    Serie(const std::string& t, double cal, int ept, const std::string& g, 
+    Serie(const std::string& t, double cal, int ept, const std::vector<std::string>& gs, 
           int nt, int te, const std::string& dir)
-        : Video(t, cal, g, dir, 0), episodiosPorTemporada(ept), 
+        : Video(t, cal, gs, dir, 0), episodiosPorTemporada(ept), 
           numTemporadas(nt), totalEpisodios(te) {}
     
     std::string getTipo() const override { return "Serie"; }
     
     std::string getInfo() const override {
         std::ostringstream oss;
-        oss << "Serie: " << titulo << " | Género: " << genero 
-            << " | Temporadas: " << numTemporadas << " | Episodios: " << totalEpisodios
+        oss << "Serie: " << titulo << " | Género: ";
+        for (size_t i = 0; i < generos.size(); ++i) {
+            oss << generos[i];
+            if (i != generos.size() -1) oss << ", ";
+        }
+        oss << " | Temporadas: " << numTemporadas << " | Episodios: " << totalEpisodios
             << " | Director: " << director << " | Calificación: " << std::fixed << std::setprecision(1) << calificacion;
         return oss.str();
     }
@@ -354,9 +362,9 @@ private:
                     }
                 }
                 else if (tipo == "PELICULA" && partes.size() >= 7) {
-                    agregarNuevaPelicula(partes);
-                    videosAgregados++;
-                }
+                    agregarNuevaPelicula(partes);                        // Se asume que cuando agregas una peliculoa SOLO se define 1 Genero... no mas
+                    videosAgregados++;                                    // Si se quiere agregar mas generos tendra que haber una linea del tipo GENERO
+                }                                                        // en el archivo
                 else if (tipo == "SERIE" && partes.size() >= 8) {
                     agregarNuevaSerie(partes);
                     videosAgregados++;
@@ -370,7 +378,9 @@ private:
                     // dividida por el separador '|'. No son dos arreglos, es un solo vector donde cada elemento
                     // representa un campo (tipo, título, calificación, etc.). En este caso, para "GENERO",
                     // partes[0] es "GENERO", partes[1] es el título, y partes[2] es el nuevo género.
-                    actualizarGeneroVideo(partes[1], partes[2]);
+                    for (size_t i = 2; i < partes.size(); ++i) {
+                        actualizarGeneroVideo(partes[1], partes[i]);
+
                 }
             }
             catch (const std::exception& e) {
@@ -428,7 +438,7 @@ private:
         std::string titulo = partes[1];
         double calificacion = std::stod(partes[2]);                    // Se asume que partes es una variable que contiene TODOS los datos de la película
         int duracion = std::stoi(partes[3]);                          // y SOLO se permite el ingreso de un tipo Género, no más
-        std::string genero = partes[4];                               // La línea asigna el género desde partes[4]
+        std::vector<std::string> generos = partes[4];                               // La línea asigna el género desde partes[4]
         std::string director = partes[5];                
         int anio = std::stoi(partes[6]);
         
@@ -437,7 +447,7 @@ private:
         }
         
         catalogo.push_back(std::make_shared<Pelicula>(
-            titulo, calificacion, duracion, genero, director, anio)); // No se que hace esta funcion... pero se necesita cambiar GENERO... a lo mejor como un apuntador
+            titulo, calificacion, duracion, generos, director, anio)); // No se que hace esta funcion... pero se necesita cambiar GENERO... a lo mejor como un apuntador
             // Respuesta: 'push_back' agrega un nuevo objeto Pelicula (creado con std::make_shared)
             // al vector 'catalogo'. Aquí no se usa un arreglo de géneros, solo un string.
     }
@@ -446,7 +456,7 @@ private:
         std::string titulo = partes[1];
         double calificacion = std::stod(partes[2]);
         int episodiosPorTemp = std::stoi(partes[3]);
-        std::string genero = partes[4];                               // Lo mismo que agregarNuevaPelicula, asigna el género desde partes[4]
+        std::vector<std::string> generos = partes[4];                               // Lo mismo que agregarNuevaPelicula, asigna el género desde partes[4]
         int numTemporadas = std::stoi(partes[5]);
         int totalEpisodios = std::stoi(partes[6]);
         std::string director = partes[7];
@@ -456,7 +466,7 @@ private:
         }
         
         catalogo.push_back(std::make_shared<Serie>(
-            titulo, calificacion, episodiosPorTemp, genero,           // Lo mismo que el otro push_back
+            titulo, calificacion, episodiosPorTemp, generos,           // Lo mismo que el otro push_back
             numTemporadas, totalEpisodios, director));
     }
     
@@ -471,13 +481,17 @@ private:
         }
     }
     
-    void actualizarGeneroVideo(const std::string& titulo, const std::string& nuevoGenero) {
+   void actualizarGeneroVideo(const std::string& titulo, const std::string& viejoGenero, const std::string& nuevoGenero) {   // pedir generoviejo antes del genero nuevo
         for (auto& video : catalogo) {
             if (video->getTitulo() == titulo) {
-                video->setGenero(nuevoGenero);
+//                video->setGeneros(nuevoGenero);
+                for (i=0; i < generos.size(); ++i{
+                    if (video->genero[i] == viejoGenero){
+                        video->genero[i] = nuevoGenero;}
+                }
             }
-        }
-    }
+        }
+    }
     
     std::string generarEstadisticas() {
         int totalPeliculas = 0;
@@ -491,7 +505,7 @@ private:
             else totalSeries++;
             
             sumaCalificaciones += video->getCalificacion();
-            generos[video->getGenero()]++;
+            generos[video->getGeneros()]++;
             directores[video->getDirector()]++;
         }
         
@@ -822,7 +836,7 @@ private:
                 // Filtrar por género
                 std::set<std::string> generos;
                 for (const auto& video : catalogo) {
-                    if (video) generos.insert(video->getGenero());
+                    if (video) generos.insert(video->getGeneros());
                 }
                 std::vector<std::string> listaGeneros(generos.begin(), generos.end());
                 
@@ -838,7 +852,7 @@ private:
                 resultado << "Videos del género \"" << generoSeleccionado << "\":\n\n";
                 
                 for (const auto& video : catalogo) {
-                    if (video && video->getGenero() == generoSeleccionado) {
+                    if (video && video->getGeneros() == generoSeleccionado) {
                         videosFiltrados.push_back(video);
                         resultado << video->getInfo() << "\n\n";
                     }
