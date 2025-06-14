@@ -1,0 +1,24 @@
+# Historial de calificaciones - Netflix Piraton
+# Formato: CALIFICACION|Titulo|Calificacion
+
+CALIFICACION|La princesa Mononoke|9.2
+CALIFICACION|El viaje de Chihiro|8.6
+CALIFICACION|Look Back|8.8
+CALIFICACION|Star Wars Episodio I La amenaza fantasma|6.5
+CALIFICACION|Star Wars Episodio II El ataque de los clones|6.5
+CALIFICACION|Star Wars Episodio III La venganza de los Sith|7.5
+CALIFICACION|Star Wars Episodio IV Una nueva esperanza|8.6
+CALIFICACION|Star Wars Episodio V El imperio contraataca|8.7
+CALIFICACION|Star Wars Episodio VI El retorno del Jedi|8.3
+CALIFICACION|Jujutsu Kaisen|8.7
+CALIFICACION|Pokemon|7.5
+CALIFICACION|Violet Evergarden|8.8
+CALIFICACION|Kimetsu no Yaiba|8.7
+CALIFICACION|Attack on Titan|9.0
+CALIFICACION|Blue Lock|8.3
+CALIFICACION|Star Wars The Clone Wars|8.4
+CALIFICACION|Ann|7.9
+CALIFICACION|Nadie nos va a extrañar|8.1
+CALIFICACION|Si la vida te da mandarinas|7.8
+CALIFICACION|Goblin|8.9
+CALIFICACION|Alien Stage|8.5
