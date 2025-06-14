@@ -57,31 +57,32 @@ protected:
     std::string basePath;
 
 public:
-    //sobre carga de operadores
-        Video& operator+=(double puntos) {
-            calificacion = std::min(10.0, calificacion + puntos);
-            return *this;
-        }
+    // Sobrecarga de operadores
+    Video& operator+=(double puntos) {
+        calificacion = std::min(10.0, calificacion + puntos);
+        return *this;
+    }
 
-        Video& operator-=(double puntos) {
-            calificacion = std::max(0.0, calificacion - puntos);
-            return *this;
-        }
-        Video(const std::string& t, double cal, const std::string& g, 
-            const std::string& dir, int a)
-            : titulo(t), calificacion(cal), genero(g), director(dir), 
-            anio(a), basePath(".\\") {
-            std::string nombreArchivo = tituloANombreArchivo(titulo);
-            rutaPortada = basePath + "portadas\\" + nombreArchivo + ".jpg";
-        }
+    Video& operator-=(double puntos) {
+        calificacion = std::max(0.0, calificacion - puntos);
+        return *this;
+    }
+
+    Video(const std::string& t, double cal, const std::string& g, 
+          const std::string& dir, int a)
+        : titulo(t), calificacion(cal), genero(g), director(dir), 
+          anio(a), basePath(".\\") {
+        std::string nombreArchivo = tituloANombreArchivo(titulo);
+        rutaPortada = basePath + "portadas\\" + nombreArchivo + ".jpg";
+    }
         
-        virtual ~Video() = default;
+    virtual ~Video() = default;
         
-        // AQUÍ VA LA FUNCIÓN FRIEND:
-        friend std::ostream& operator<<(std::ostream& os, const Video& video) {
-            os << video.getInfo();
-            return os;
-        }
+    // Función friend para operator<<
+    friend std::ostream& operator<<(std::ostream& os, const Video& video) {
+        os << video.getInfo();
+        return os;
+    }
     
     virtual std::string getTipo() const = 0;
     virtual std::string getInfo() const = 0;
@@ -117,25 +118,25 @@ public:
         }
         return basePath + "portadas\\default.jpg";
     }
-    //aqui se hace la sobre carga de operadores
-    // En la clase Video, agregar estos métodos públicos:
-        bool operator<(const Video& other) const {
-            return calificacion < other.calificacion;
-        }
 
-        bool operator>(const Video& other) const {
-            return calificacion > other.calificacion;
-        }
+    // Sobrecarga de operadores de comparación
+    bool operator<(const Video& other) const {
+        return calificacion < other.calificacion;
+    }
 
-        bool operator==(const Video& other) const {
-            return titulo == other.titulo;
-        }
+    bool operator>(const Video& other) const {
+        return calificacion > other.calificacion;
+    }
 
-        bool operator!=(const Video& other) const {
-            return !(*this == other);
-        }
+    bool operator==(const Video& other) const {
+        return titulo == other.titulo;
+    }
+
+    bool operator!=(const Video& other) const {
+        return !(*this == other);
+    }
 };
-//clase para manejo de historial
+
 // Clase para manejar el historial de calificaciones
 class HistorialManager {
 private:
@@ -335,12 +336,12 @@ public:
     }
 };
 
-// Widget para portadas (CON reproducción de videos al hacer click)
+// Widget para portadas
 class PortadaBox : public Fl_Box {
 private:
     std::shared_ptr<Video> video;
     Fl_Image* imagen;
-    CatalogoApp* app; // Referencia a la aplicación principal
+    CatalogoApp* app;
 
 public:
     PortadaBox(int x, int y, std::shared_ptr<Video> v, CatalogoApp* aplicacion) 
@@ -369,7 +370,6 @@ public:
     
     std::shared_ptr<Video> getVideo() const { return video; }
     
-    // Manejar eventos de click
     int handle(int event) override {
         switch(event) {
             case FL_PUSH:
@@ -379,12 +379,10 @@ public:
                 }
                 break;
             case FL_ENTER:
-                // Cambiar apariencia al pasar el mouse
                 box(FL_BORDER_FRAME);
                 redraw();
                 return 1;
             case FL_LEAVE:
-                // Restaurar apariencia normal
                 box(FL_BORDER_BOX);
                 redraw();
                 return 1;
@@ -397,7 +395,6 @@ private:
         if (!video) return;
         
         if (video->getTipo() == "Pelicula") {
-            // Reproducir película directamente
             std::string rutaVideo = video->getRutaVideo();
             std::string comando = "start \"\" \"" + rutaVideo + "\"";
             int resultado = system(comando.c_str());
@@ -409,7 +406,6 @@ private:
             }
         } 
         else if (video->getTipo() == "Serie") {
-            // Para series, mostrar mensaje informativo
             fl_message("Serie: %s\nUsa la opción 3 del menú para seleccionar episodios.", video->getTitulo().c_str());
         }
     }
@@ -485,9 +481,10 @@ private:
     Fl_Scroll* scrollPortadas;
     Fl_Pack* packPortadas;
     std::vector<PortadaBox*> portadas;
+
     void guardarHistorialAlCerrar() {
-    historial.actualizarHistorialCompleto(catalogo);
-}
+        historial.actualizarHistorialCompleto(catalogo);
+    }
 
     void procesarArchivoDatos(const std::string& rutaArchivo) {
         std::ifstream archivo(rutaArchivo);
@@ -529,11 +526,6 @@ private:
                     procesarCalificacionUsuario(partes[1], partes[2], std::stoi(partes[3]));
                 }
                 else if (tipo == "GENERO" && partes.size() >= 3) {
-                    // QUE tipo de variable es partes? y por que consta de dos arreglos? que info guarda?
-                    // Respuesta: 'partes' es un std::vector<std::string> que contiene los campos de una línea del archivo
-                    // dividida por el separador '|'. No son dos arreglos, es un solo vector donde cada elemento
-                    // representa un campo (tipo, título, calificación, etc.). En este caso, para "GENERO",
-                    // partes[0] es "GENERO", partes[1] es el título, y partes[2] es el nuevo género.
                     actualizarGeneroVideo(partes[1], partes[2]);
                 }
             }
@@ -578,21 +570,21 @@ private:
         return resultado;
     }
     
-   bool actualizarCalificacionExistente(const std::string& titulo, double nuevaCalificacion) {
-    for (auto& video : catalogo) {
-        if (video->getTitulo() == titulo) {  // Comparación correcta por título
-            video->setCalificacion(nuevaCalificacion);
-            return true;
+    bool actualizarCalificacionExistente(const std::string& titulo, double nuevaCalificacion) {
+        for (auto& video : catalogo) {
+            if (video->getTitulo() == titulo) {
+                video->setCalificacion(nuevaCalificacion);
+                return true;
+            }
         }
+        return false;
     }
-    return false;
-}
     
     void agregarNuevaPelicula(const std::vector<std::string>& partes) {
         std::string titulo = partes[1];
-        double calificacion = std::stod(partes[2]);                    // Se asume que partes es una variable que contiene TODOS los datos de la película
-        int duracion = std::stoi(partes[3]);                          // y SOLO se permite el ingreso de un tipo Género, no más
-        std::string genero = partes[4];                               // La línea asigna el género desde partes[4]
+        double calificacion = std::stod(partes[2]);
+        int duracion = std::stoi(partes[3]);
+        std::string genero = partes[4];
         std::string director = partes[5];                
         int anio = std::stoi(partes[6]);
         
@@ -601,16 +593,14 @@ private:
         }
         
         catalogo.push_back(std::make_shared<Pelicula>(
-            titulo, calificacion, duracion, genero, director, anio)); // No se que hace esta funcion... pero se necesita cambiar GENERO... a lo mejor como un apuntador
-            // Respuesta: 'push_back' agrega un nuevo objeto Pelicula (creado con std::make_shared)
-            // al vector 'catalogo'. Aquí no se usa un arreglo de géneros, solo un string.
+            titulo, calificacion, duracion, genero, director, anio));
     }
     
     void agregarNuevaSerie(const std::vector<std::string>& partes) {
         std::string titulo = partes[1];
         double calificacion = std::stod(partes[2]);
         int episodiosPorTemp = std::stoi(partes[3]);
-        std::string genero = partes[4];                               // Lo mismo que agregarNuevaPelicula, asigna el género desde partes[4]
+        std::string genero = partes[4];
         int numTemporadas = std::stoi(partes[5]);
         int totalEpisodios = std::stoi(partes[6]);
         std::string director = partes[7];
@@ -620,7 +610,7 @@ private:
         }
         
         catalogo.push_back(std::make_shared<Serie>(
-            titulo, calificacion, episodiosPorTemp, genero,           // Lo mismo que el otro push_back
+            titulo, calificacion, episodiosPorTemp, genero,
             numTemporadas, totalEpisodios, director));
     }
     
@@ -692,7 +682,6 @@ private:
 
     void mostrarPeliculasSoloCalificacion() {
         try {
-            // Definir rangos de calificación
             std::vector<std::string> rangos = {"1-2", "3-4", "5-6", "7-8", "9-10"};
             SelectorWindow rangoWin("Seleccionar Rango de Calificación", rangos);
             rangoWin.show();
@@ -703,7 +692,6 @@ private:
             }
             std::string rangoSeleccionado = rangoWin.getSeleccion();
 
-            // Parsear rango basándose en la primera cifra de la calificación
             int rangoMin = 0, rangoMax = 10;
             if (rangoSeleccionado == "1-2") { rangoMin = 1; rangoMax = 2; }
             else if (rangoSeleccionado == "3-4") { rangoMin = 3; rangoMax = 4; }
@@ -711,17 +699,13 @@ private:
             else if (rangoSeleccionado == "7-8") { rangoMin = 7; rangoMax = 8; }
             else if (rangoSeleccionado == "9-10") { rangoMin = 9; rangoMax = 10; }
 
-            // Filtrar películas y series
             std::vector<std::shared_ptr<Video>> videosFiltrados;
             std::ostringstream oss;
             oss << "Películas y Series en el rango de calificación " << rangoSeleccionado << ":\n\n";
 
             for (const auto& video : catalogo) {
                 if (video) {
-                    // Obtener la primera cifra de la calificación
                     int primeraCifraCalificacion = static_cast<int>(video->getCalificacion());
-                    
-                    // Verificar si está en el rango seleccionado
                     if (primeraCifraCalificacion >= rangoMin && primeraCifraCalificacion <= rangoMax) {
                         videosFiltrados.push_back(video);
                         oss << video->getInfo() << "\n\n";
@@ -738,9 +722,6 @@ private:
         } catch (const std::exception& e) {
             fl_alert("Error al mostrar películas: %s", e.what());
             textBuffer->text("Error al mostrar películas.");
-        } catch (...) {
-            fl_alert("Error desconocido al mostrar películas.");
-            textBuffer->text("Error desconocido al mostrar películas.");
         }
     }
 
@@ -748,8 +729,8 @@ public:
     CatalogoApp() {
         setupUI();
         cargarDatosPorDefecto();
-        historial.cargarHistorial(catalogo); // Agregar esta línea
-         actualizarPortadas();
+        historial.cargarHistorial(catalogo);
+        actualizarPortadas();
     }
     
     ~CatalogoApp() {
@@ -765,145 +746,144 @@ public:
     }
     
     void reproducirSerie(const std::string& titulo) {
-        mostrarEpisodiosSerie(); // Reutiliza la lógica existente
+        mostrarEpisodiosSerie();
     }   
-   void ordenarPorCalificacion() {
-    // Ordenar de mayor a menor calificación usando operator>
-    std::sort(catalogo.begin(), catalogo.end(), 
-        [](const auto& a, const auto& b) { return *a > *b; });
-}
-void ajustarCalificaciones() {
-    try {
-        std::vector<std::string> titulos;
-        for (const auto& video : catalogo) {
-            if (video) titulos.push_back(video->getTitulo());
-        }
-        
-        SelectorWindow tituloWin("Seleccionar Video", titulos);
-        tituloWin.show();
-        while (tituloWin.shown()) Fl::wait();
-        if (tituloWin.fueCancelado()) return;
-        
-        std::string tituloSeleccionado = tituloWin.getSeleccion();
-        
-        std::vector<std::string> operaciones = {"Aumentar +0.5", "Disminuir -0.5", "Aumentar +1.0", "Disminuir -1.0"};
-        SelectorWindow opWin("Seleccionar Operación", operaciones);
-        opWin.show();
-        while (opWin.shown()) Fl::wait();
-        if (opWin.fueCancelado()) return;
-        
-        std::string operacion = opWin.getSeleccion();
-        
-        for (auto& video : catalogo) {
-            if (video->getTitulo() == tituloSeleccionado) {
-                double calAnterior = video->getCalificacion();
-                
-                if (operacion == "Aumentar +0.5") {
-                    *video += 0.5;  // Usando operator+=
-                } else if (operacion == "Disminuir -0.5") {
-                    *video -= 0.5;  // Usando operator-=
-                } else if (operacion == "Aumentar +1.0") {
-                    *video += 1.0;
-                } else if (operacion == "Disminuir -1.0") {
-                    *video -= 1.0;
-                }
-                
-                std::ostringstream oss;
-                oss << "Calificación ajustada:\n";
-                oss << "Video: " << video->getTitulo() << "\n";
-                oss << "Calificación anterior: " << std::fixed << std::setprecision(1) << calAnterior << "\n";
-                oss << "Nueva calificación: " << std::fixed << std::setprecision(1) << video->getCalificacion() << "\n";
-                
-                textBuffer->text(oss.str().c_str());
-                actualizarPortadas();
-                break;
-            }
-        }
-        
-    } catch (const std::exception& e) {
-        fl_alert("Error: %s", e.what());
-    }
-}
-void mostrarMejorCalificado() {
-    if (catalogo.empty()) {
-        textBuffer->text("No hay videos en el catálogo.");
-        return;
-    }
-    
-    auto mejor = *std::max_element(catalogo.begin(), catalogo.end(),
-        [](const auto& a, const auto& b) { return *a < *b; });
-    
-    std::ostringstream oss;
-    oss << "Video con mejor calificación:\n\n";
-    oss << *mejor;  // Usando operator<<
-    textBuffer->text(oss.str().c_str());
-}
 
-void mostrarVideosSimilares() {
-    try {
-        // Seleccionar video base
-        std::vector<std::string> titulos;
-        for (const auto& video : catalogo) {
-            if (video) titulos.push_back(video->getTitulo());
-        }
-        
-        SelectorWindow tituloWin("Seleccionar Video Base", titulos);
-        tituloWin.show();
-        while (tituloWin.shown()) Fl::wait();
-        if (tituloWin.fueCancelado()) return;
-        
-        std::string tituloSeleccionado = tituloWin.getSeleccion();
-        std::shared_ptr<Video> videoBase = nullptr;
-        
-        for (const auto& video : catalogo) {
-            if (video->getTitulo() == tituloSeleccionado) {
-                videoBase = video;
-                break;
+    void ordenarPorCalificacion() {
+        std::sort(catalogo.begin(), catalogo.end(), 
+            [](const auto& a, const auto& b) { return *a > *b; });
+    }
+
+    void ajustarCalificaciones() {
+        try {
+            std::vector<std::string> titulos;
+            for (const auto& video : catalogo) {
+                if (video) titulos.push_back(video->getTitulo());
             }
-        }
         
-        if (!videoBase) return;
+            SelectorWindow tituloWin("Seleccionar Video", titulos);
+            tituloWin.show();
+            while (tituloWin.shown()) Fl::wait();
+            if (tituloWin.fueCancelado()) return;
         
-        std::ostringstream oss;
-        oss << "Videos similares a: " << videoBase->getTitulo() << "\n";
-        oss << "Calificación base: " << videoBase->getCalificacion() << "\n\n";
+            std::string tituloSeleccionado = tituloWin.getSeleccion();
         
-        for (const auto& video : catalogo) {
-            if (video != videoBase) {
-                // Usar operadores para comparar
-                if (*video > *videoBase) {
-                    oss << "MEJOR: " << *video << "\n\n";
-                } else if (*video < *videoBase) {
-                    oss << "MENOR: " << *video << "\n\n";
-                } else {
-                    // Calificaciones iguales (poco probable con decimales)
-                    oss << "IGUAL: " << *video << "\n\n";
+            std::vector<std::string> operaciones = {"Aumentar +0.5", "Disminuir -0.5", "Aumentar +1.0", "Disminuir -1.0"};
+            SelectorWindow opWin("Seleccionar Operación", operaciones);
+            opWin.show();
+            while (opWin.shown()) Fl::wait();
+            if (opWin.fueCancelado()) return;
+        
+            std::string operacion = opWin.getSeleccion();
+        
+            for (auto& video : catalogo) {
+                if (video->getTitulo() == tituloSeleccionado) {
+                    double calAnterior = video->getCalificacion();
+                
+                    if (operacion == "Aumentar +0.5") {
+                        *video += 0.5;
+                    } else if (operacion == "Disminuir -0.5") {
+                        *video -= 0.5;
+                    } else if (operacion == "Aumentar +1.0") {
+                        *video += 1.0;
+                    } else if (operacion == "Disminuir -1.0") {
+                        *video -= 1.0;
+                    }
+                
+                    std::ostringstream oss;
+                    oss << "Calificación ajustada:\n";
+                    oss << "Video: " << video->getTitulo() << "\n";
+                    oss << "Calificación anterior: " << std::fixed << std::setprecision(1) << calAnterior << "\n";
+                    oss << "Nueva calificación: " << std::fixed << std::setprecision(1) << video->getCalificacion() << "\n";
+                
+                    textBuffer->text(oss.str().c_str());
+                    actualizarPortadas();
+                    break;
                 }
             }
+        
+        } catch (const std::exception& e) {
+            fl_alert("Error: %s", e.what());
         }
-        
-        textBuffer->text(oss.str().c_str());
-        
-    } catch (const std::exception& e) {
-        fl_alert("Error: %s", e.what());
     }
-}  
+
+    void mostrarMejorCalificado() {
+        if (catalogo.empty()) {
+            textBuffer->text("No hay videos en el catálogo.");
+            return;
+        }
+    
+        auto mejor = *std::max_element(catalogo.begin(), catalogo.end(),
+            [](const auto& a, const auto& b) { return *a < *b; });
+    
+        std::ostringstream oss;
+        oss << "Video con mejor calificación:\n\n";
+        oss << *mejor;
+        textBuffer->text(oss.str().c_str());
+    }
+
+    void mostrarVideosSimilares() {
+        try {
+            std::vector<std::string> titulos;
+            for (const auto& video : catalogo) {
+                if (video) titulos.push_back(video->getTitulo());
+            }
+        
+            SelectorWindow tituloWin("Seleccionar Video Base", titulos);
+            tituloWin.show();
+            while (tituloWin.shown()) Fl::wait();
+            if (tituloWin.fueCancelado()) return;
+        
+            std::string tituloSeleccionado = tituloWin.getSeleccion();
+            std::shared_ptr<Video> videoBase = nullptr;
+        
+            for (const auto& video : catalogo) {
+                if (video->getTitulo() == tituloSeleccionado) {
+                    videoBase = video;
+                    break;
+                }
+            }
+        
+            if (!videoBase) return;
+        
+            std::ostringstream oss;
+            oss << "Videos similares a: " << videoBase->getTitulo() << "\n";
+            oss << "Calificación base: " << videoBase->getCalificacion() << "\n\n";
+        
+            for (const auto& video : catalogo) {
+                if (video != videoBase) {
+                    if (*video > *videoBase) {
+                        oss << "MEJOR: " << *video << "\n\n";
+                    } else if (*video < *videoBase) {
+                        oss << "MENOR: " << *video << "\n\n";
+                    } else {
+                        oss << "IGUAL: " << *video << "\n\n";
+                    }
+                }
+            }
+        
+            textBuffer->text(oss.str().c_str());
+        
+        } catch (const std::exception& e) {
+            fl_alert("Error: %s", e.what());
+        }
+    }  
 
 private:
     void setupUI() {
-         window = new Fl_Window(1000, 700, "Catalogo de Películas y Series");
-            window->color(FL_BLACK);
+        window = new Fl_Window(1000, 700, "Catalogo de Películas y Series");
+        window->color(FL_BLACK);
             
-            menuChoice = new Fl_Choice(20, 20, 300, 30, "Menú:");
-            menuChoice->add("1. Cargar archivo de datos");
-            menuChoice->add("2. Mostrar videos por género o calificación");
-            menuChoice->add("3. Mostrar episodios de serie");
-            menuChoice->add("4. Mostrar películas por calificación");
-            menuChoice->add("5. Calificar video");
-            menuChoice->add("6. Ordenar por calificación");        // NUEVO
-            menuChoice->add("7. Mostrar mejor calificado");         // NUEVO
-            menuChoice->add("8. Comparar videos");                  // NUEVO
-            menuChoice->add("0. Salir");
+        menuChoice = new Fl_Choice(20, 20, 300, 30, "Menú:");
+        menuChoice->add("1. Cargar archivo de datos");
+        menuChoice->add("2. Mostrar videos por género o calificación");
+        menuChoice->add("3. Mostrar episodios de serie");
+        menuChoice->add("4. Mostrar películas por calificación");
+        menuChoice->add("5. Calificar video");
+        menuChoice->add("6. Ordenar por calificación");
+        menuChoice->add("7. Mostrar mejor calificado");
+        menuChoice->add("8. Comparar videos");
+        menuChoice->add("0. Salir");
         menuChoice->value(0);
         menuChoice->color(FL_DARK3);
         menuChoice->textcolor(FL_WHITE);
@@ -952,47 +932,44 @@ private:
         app->ejecutarOpcion();
     }
     
-   void ejecutarOpcion() {
-    int opcion = menuChoice->value();
+    void ejecutarOpcion() {
+        int opcion = menuChoice->value();
     
-    try {
-        switch(opcion) {
-            case 0: cargarArchivoDatos(); break;
-            case 1: mostrarVideosPorCalificacionOGenero(); break;
-            case 2: mostrarEpisodiosSerie(); break;
-            case 3: mostrarPeliculasSoloCalificacion(); break;
-            case 4: calificarVideo(); break;
-            case 5: // NUEVO: Ordenar por calificación
-                ordenarPorCalificacion();
-                actualizarPortadas();
-                textBuffer->text("Catálogo ordenado por calificación (mayor a menor)");
-                break;
-            case 6: // NUEVO: Mostrar mejor calificado
-                mostrarMejorCalificado();
-                break;
-            case 7: // NUEVO: Comparar videos
-                mostrarVideosSimilares();
-                break;
-            case 8: // Salir
-                guardarHistorialAlCerrar();
-                window->hide();
-                Fl::delete_widget(window);
-                Fl::check();
-                exit(0);
-                break;
-            default:
-                fl_alert("Opción no válida seleccionada.");
-                break;
+        try {
+            switch(opcion) {
+                case 0: cargarArchivoDatos(); break;
+                case 1: mostrarVideosPorCalificacionOGenero(); break;
+                case 2: mostrarEpisodiosSerie(); break;
+                case 3: mostrarPeliculasSoloCalificacion(); break;
+                case 4: calificarVideo(); break;
+                case 5:
+                    ordenarPorCalificacion();
+                    actualizarPortadas();
+                    textBuffer->text("Catálogo ordenado por calificación (mayor a menor)");
+                    break;
+                case 6:
+                    mostrarMejorCalificado();
+                    break;
+                case 7:
+                    mostrarVideosSimilares();
+                    break;
+                case 8:
+                    guardarHistorialAlCerrar();
+                    window->hide();
+                    Fl::delete_widget(window);
+                    Fl::check();
+                    exit(0);
+                    break;
+                default:
+                    fl_alert("Opción no válida seleccionada.");
+                    break;
+            }
+        } catch (const std::exception& e) {
+            fl_alert("Error al ejecutar opción: %s", e.what());
         }
-    } catch (const std::exception& e) {
-        fl_alert("Error al ejecutar opción: %s", e.what());
-    } catch (...) {
-        fl_alert("Error desconocido al ejecutar opción.");
     }
-}
     
     void cargarDatosPorDefecto() {
-        // Películas (mantenemos las existentes con géneros únicos)
         catalogo.push_back(std::make_shared<Pelicula>(
             "La princesa Mononoke", 8.4, 134, "Fantasia",
             "Hayao Miyazaki", 1997));
@@ -1021,7 +998,6 @@ private:
             "Star Wars Episodio VI El retorno del Jedi", 8.3, 131, "Ciencia Ficcion",
             "Richard Marquand", 1983));
         
-        // Series con géneros únicos y corregidos
         catalogo.push_back(std::make_shared<Serie>(
             "Jujutsu Kaisen", 8.7, 24, "Accion",
             2, 47, "Sunghoo Park"));
@@ -1095,7 +1071,6 @@ private:
     
     void mostrarVideosPorCalificacionOGenero() {
         try {
-            // Primero, preguntar al usuario qué tipo de filtro quiere aplicar
             std::vector<std::string> tiposFiltro = {"Por Genero", "Por Calificacion"};
             SelectorWindow tipoWin("Seleccionar Tipo de Filtro", tiposFiltro);
             tipoWin.show();
@@ -1110,7 +1085,6 @@ private:
             std::ostringstream resultado;
             
             if (tipoSeleccionado == "Por Genero") {
-                // Filtrar por género
                 std::set<std::string> generos;
                 for (const auto& video : catalogo) {
                     if (video) generos.insert(video->getGenero());
@@ -1136,7 +1110,6 @@ private:
                 }
                 
             } else if (tipoSeleccionado == "Por Calificacion") {
-                // Filtrar por calificación
                 std::vector<std::string> rangos = {"1-2", "3-4", "5-6", "7-8", "9-10"};
                 SelectorWindow rangoWin("Seleccionar Rango de Calificacion", rangos);
                 rangoWin.show();
@@ -1147,7 +1120,6 @@ private:
                 }
                 std::string rangoSeleccionado = rangoWin.getSeleccion();
                 
-                // Parsear rango
                 double calMin = 0, calMax = 10;
                 if (rangoSeleccionado == "1-2") { calMin = 1.0; calMax = 2.0; }
                 else if (rangoSeleccionado == "3-4") { calMin = 3.0; calMax = 4.0; }
@@ -1169,7 +1141,6 @@ private:
                 resultado << "No se encontraron videos que cumplan con el criterio seleccionado.";
             }
             
-            // Solo mostrar resultados en el área de texto, sin actualizar portadas
             textBuffer->text(resultado.str().c_str());
             
         } catch (const std::exception& e) {
@@ -1180,7 +1151,6 @@ private:
     
     void mostrarEpisodiosSerie() {
         try {
-            // Obtener series
             std::vector<std::string> series;
             for (const auto& video : catalogo) {
                 if (video && video->getTipo() == "Serie") {
@@ -1193,7 +1163,6 @@ private:
                 return;
             }
             
-            // Ventana para seleccionar serie
             SelectorWindow serieWin("Seleccionar Serie", series);
             serieWin.show();
             while (serieWin.shown()) Fl::wait();
@@ -1203,7 +1172,6 @@ private:
             }
             std::string serieSeleccionada = serieWin.getSeleccion();
             
-            // Encontrar la serie seleccionada
             std::shared_ptr<Serie> serieEncontrada = nullptr;
             for (const auto& video : catalogo) {
                 if (video && video->getTipo() == "Serie" && video->getTitulo() == serieSeleccionada) {
@@ -1217,7 +1185,6 @@ private:
                 return;
             }
             
-            // Generar lista de episodios disponibles
             std::vector<std::string> episodios;
             int epNum = 1;
             for (int temp = 1; temp <= serieEncontrada->getNumTemporadas(); temp++) {
@@ -1230,7 +1197,6 @@ private:
                 }
             }
             
-            // Ventana para seleccionar episodio
             SelectorWindow episodioWin("Seleccionar Episodio para Reproducir", episodios);
             episodioWin.show();
             while (episodioWin.shown()) Fl::wait();
@@ -1240,23 +1206,18 @@ private:
             }
             std::string episodioSeleccionado = episodioWin.getSeleccion();
             
-            // Generar ruta del episodio seleccionado
             std::string nombreArchivo = tituloANombreArchivo(serieSeleccionada);
             
-            // Extraer temporada y episodio del string seleccionado (formato: T1E1 - Episodio 1)
             std::string temp_ep = episodioSeleccionado.substr(0, episodioSeleccionado.find(" - "));
-            // Convertir T1E1 a s1e1
             std::string episodio_formato = temp_ep;
             std::transform(episodio_formato.begin(), episodio_formato.end(), episodio_formato.begin(), ::tolower);
-            episodio_formato[0] = 's'; // Cambiar 't' por 's'
+            episodio_formato[0] = 's';
             
             std::string rutaEpisodio = ".\\videos\\series\\" + nombreArchivo + "_" + episodio_formato + ".mp4";
             
-            // Intentar ejecutar el episodio
             std::string comando = "start \"\" \"" + rutaEpisodio + "\"";
             int resultado = system(comando.c_str());
             
-            // Mostrar información en el área de resultados
             std::ostringstream info;
             info << "=== INFORMACIÓN DEL EPISODIO ===\n\n";
             info << "Serie: " << serieSeleccionada << "\n";
@@ -1281,60 +1242,57 @@ private:
         }
     }
     
-void calificarVideo() {
-    try {
-        // Obtener títulos
-        std::vector<std::string> titulos;
-        for (const auto& video : catalogo) {
-            if (video) titulos.push_back(video->getTitulo());
-        }
-        
-        // Ventana para seleccionar video
-        SelectorWindow tituloWin("Seleccionar Video para Calificar", titulos);
-        tituloWin.show();
-        while (tituloWin.shown()) Fl::wait();
-        if (tituloWin.fueCancelado()) {
-            textBuffer->text("Operación cancelada.");
-            return;
-        }
-        std::string tituloSeleccionado = tituloWin.getSeleccion();
-        
-        // Solicitar calificación
-        const char* input = fl_input("Ingresa la calificación (1-10):", "5");
-        if (input) {
-            int calificacion = std::stoi(input);
-            if (calificacion >= 1 && calificacion <= 10) {
-                for (auto& video : catalogo) {
-                    if (video && video->getTitulo() == tituloSeleccionado) {
-                        double calificacionAnterior = video->getCalificacion();
-                        video->actualizarCalificacion(calificacion);
-                        
-                        // Guardar en historial
-                        historial.guardarCalificacion(tituloSeleccionado, video->getCalificacion());
-                        
-                        std::ostringstream oss;
-                        oss << "Calificación actualizada para: " << video->getTitulo() 
-                            << "\nCalificación anterior: " << std::fixed << std::setprecision(1) << calificacionAnterior
-                            << "\nNueva calificación: " << std::fixed << std::setprecision(1) << video->getCalificacion()
-                            << "\n\nHistorial guardado en: historialDatos.txt";
-                        
-                        textBuffer->text(oss.str().c_str());
-                        fl_message("Calificación guardada exitosamente");
-                        actualizarPortadas();
-                        return;
-                    }
-                }
-                fl_alert("No se encontró el video");
-            } else {
-                fl_alert("La calificación debe estar entre 1 y 10");
+    void calificarVideo() {
+        try {
+            std::vector<std::string> titulos;
+            for (const auto& video : catalogo) {
+                if (video) titulos.push_back(video->getTitulo());
             }
+        
+            SelectorWindow tituloWin("Seleccionar Video para Calificar", titulos);
+            tituloWin.show();
+            while (tituloWin.shown()) Fl::wait();
+            if (tituloWin.fueCancelado()) {
+                textBuffer->text("Operación cancelada.");
+                return;
+            }
+            std::string tituloSeleccionado = tituloWin.getSeleccion();
+        
+            const char* input = fl_input("Ingresa la calificación (1-10):", "5");
+            if (input) {
+                int calificacion = std::stoi(input);
+                if (calificacion >= 1 && calificacion <= 10) {
+                    for (auto& video : catalogo) {
+                        if (video && video->getTitulo() == tituloSeleccionado) {
+                            double calificacionAnterior = video->getCalificacion();
+                            video->actualizarCalificacion(calificacion);
+                        
+                            // Guardar el historial completo actualizado
+                            historial.actualizarHistorialCompleto(catalogo);
+                        
+                            std::ostringstream oss;
+                            oss << "Calificación actualizada para: " << video->getTitulo() 
+                                << "\nCalificación anterior: " << std::fixed << std::setprecision(1) << calificacionAnterior
+                                << "\nNueva calificación: " << std::fixed << std::setprecision(1) << video->getCalificacion()
+                                << "\n\nHistorial guardado en: historialDatos.txt";
+                        
+                            textBuffer->text(oss.str().c_str());
+                            fl_message("Calificación guardada exitosamente");
+                            actualizarPortadas();
+                            return;
+                        }
+                    }
+                    fl_alert("No se encontró el video");
+                } else {
+                    fl_alert("La calificación debe estar entre 1 y 10");
+                }
+            }
+        } catch (const std::exception& e) {
+            fl_alert("Error al calificar video: %s", e.what());
+            textBuffer->text("Error al calificar video.");
         }
-    } catch (const std::exception& e) {
-        fl_alert("Error al calificar video: %s", e.what());
-        textBuffer->text("Error al calificar video.");
     }
-}
-}; // Cerrar la clase CatalogoApp
+};
 
 int main() {
     try {
